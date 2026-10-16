@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="color-scheme" content="dark light"/>
+<link rel="icon" href="data:,"/>
+<title>Poker-Hands Roguelike</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;900&family=Fraunces:opsz,wght@9..144,900&display=swap" rel="stylesheet">
+<style>
+:root{--felt:#0a3527;--felt2:#07251b;--panel:#0f1f1a;--panel2:#162e26;--gold:#f5c542;--red:#e63946;--blue:#2a9dcc;--cream:#fff8e6;--ink:#111827;--muted:#a7c4b5;--line:rgba(255,255,255,.14)}
+@media (prefers-color-scheme:light){:root{--felt:#0e4d36;--felt2:#0a3527}}
+*{box-sizing:border-box} body{margin:0;font-family:Archivo,system-ui,sans-serif;background:var(--felt2);color:#fff;-webkit-tap-highlight-color:transparent}
+button{font-family:inherit;cursor:pointer}
+.top{position:sticky;top:0;z-index:20;background:#071a12;border-bottom:3px solid #00000055;padding:10px 14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.logo{font-family:Fraunces,serif;font-size:26px;line-height:1} .logo span{color:var(--gold)}
+.pills{display:flex;gap:8px;flex-wrap:wrap}.pill{background:#ffffff14;border:1px solid var(--line);border-radius:999px;padding:7px 11px;font-weight:800;font-size:13px}.pill b{color:var(--gold)}
+.table{background:radial-gradient(ellipse at 50% 30%, #146144 0%, var(--felt) 55%, var(--felt2) 100%);min-height:calc(100vh - 53px);padding:14px;max-width:1180px;margin:0 auto}
+.scorebar{background:#00000055;border:2px solid #ffffff22;border-radius:16px;padding:12px 14px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}
+.bar{height:14px;background:#ffffff22;border-radius:999px;overflow:hidden;margin-top:8px}.bar i{display:block;height:100%;background:var(--gold);transition:width .5s}
+.bigscore{font-size:32px;font-weight:900;line-height:1;text-align:right}.bigscore small{display:block;font-size:11px;letter-spacing:.12em;color:var(--muted);font-weight:800;margin-bottom:4px}
+.jokers{display:flex;gap:8px;overflow-x:auto;padding:12px 2px;scrollbar-width:none}.jokers::-webkit-scrollbar{display:none}
+.joker{min-width:118px;max-width:118px;background:linear-gradient(180deg,#fff8e6,#ffe9a8);color:#1a1a1a;border-radius:12px;padding:10px;border:3px solid #111;box-shadow:0 6px 0 #00000066;text-align:center}
+.joker .face{font-size:28px}.joker h4{margin:4px 0;font-size:13px}.joker p{margin:0;font-size:11px;line-height:1.35;color:#374151}.emptyj{border:2px dashed #ffffff33;border-radius:12px;min-width:118px;display:grid;place-items:center;color:#ffffff88;font-size:12px;font-weight:800;padding:16px;text-align:center}
+.handlabel{text-align:center;margin:8px 0 2px}.handlabel .hname{font-family:Fraunces,serif;font-size:28px}.handlabel .calc{display:inline-flex;gap:0;margin-top:8px;border-radius:10px;overflow:hidden;border:2px solid #000}.calc b{padding:8px 14px;font-size:18px}.calc .chips{background:var(--blue)}.calc .mult{background:var(--red)}.calc .x{align-self:center;background:#111;padding:8px 6px}
+.cards{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;padding:18px 4px 8px;min-height:148px}
+.pcard{width:86px;height:120px;background:#fff;color:#111;border-radius:10px;border:2px solid #111;box-shadow:0 6px 0 #00000055;position:relative;padding:8px;text-align:left;transition:transform .15s, box-shadow .15s;flex:0 0 auto}
+.pcard.red{color:#d61f2c}.pcard.sel{transform:translateY(-18px);box-shadow:0 12px 0 #00000055,0 0 0 4px var(--gold)}.pcard.scoring{box-shadow:0 0 0 4px var(--blue)}
+.pcard .r{font-size:22px;font-weight:900;line-height:1}.pcard .s{font-size:22px;line-height:1}.pcard .big{position:absolute;inset:auto 6px 4px auto;font-size:38px;opacity:.9}.pcard .lvl{position:absolute;bottom:6px;left:8px;font-size:10px;font-weight:900;background:#111;color:#fff;padding:2px 5px;border-radius:999px}
+.controls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:10px 0}.btn{border:2px solid #000;border-radius:999px;padding:13px 20px;font-weight:900;font-size:15px;box-shadow:0 5px 0 #000}.btn:active{transform:translateY(3px);box-shadow:0 2px 0 #000}.btn.play{background:var(--blue);color:#fff}.btn.discard{background:var(--red);color:#fff}.btn.gold{background:var(--gold);color:#111}.btn.ghost{background:#ffffff18;color:#fff;border-color:#ffffff44;box-shadow:none}.btn:disabled{opacity:.45;cursor:not-allowed}
+.meta{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;font-size:13px;font-weight:800}.meta span{background:#00000044;padding:7px 10px;border-radius:999px}
+.log{background:#00000044;border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.5;color:#d1fae5;min-height:44px;text-align:center}
+.screen{background:#0b1f18;border:2px solid #ffffff22;border-radius:18px;padding:20px;margin-top:14px}
+.blinds{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
+.blindcard{border-radius:16px;padding:16px;border:2px solid #000;text-align:left;color:#fff}.blindcard.small{background:#2563eb}.blindcard.big{background:#b45309}.blindcard.boss{background:#991b1b}.blindcard h3{margin:0 0 6px;font-size:18px}.blindcard p{margin:4px 0;font-size:13px;line-height:1.4;opacity:.92}.blindcard .target{font-size:26px;font-weight:900}
+.shopgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:12px}
+.shopitem{background:var(--cream);color:#111;border-radius:14px;padding:14px;border:2px solid #000}.shopitem h4{margin:0 0 4px}.shopitem p{margin:0 0 10px;font-size:13px;line-height:1.45;color:#374151}.price{font-weight:900}
+.levels{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}.lvlbox{background:#ffffff10;border:1px solid var(--line);border-radius:10px;padding:9px;font-size:12px}.lvlbox b{display:block;font-size:13px}
+.pop{position:fixed;inset:0;display:grid;place-items:center;pointer-events:none;z-index:50}.pop div{font-family:Fraunces,serif;font-size:clamp(36px,9vw,72px);color:var(--gold);text-shadow:3px 3px 0 #000;animation:pop 1s ease forwards}@keyframes pop{0%{transform:scale(.6);opacity:0}20%{opacity:1;transform:scale(1.1)}100%{transform:translateY(-40px) scale(1);opacity:0}}
+@media(max-width:640px){.pcard{width:68px;height:96px;padding:6px}.pcard .r,.pcard .s{font-size:17px}.pcard .big{font-size:28px}.blinds,.shopgrid{grid-template-columns:1fr}.levels{grid-template-columns:repeat(2,1fr)}.bigscore{font-size:24px}.logo{font-size:21px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top"><div class="logo">POKER <span>ROGUE</span></div><div class="pills" id="pills"></div></header>
+<main class="table" id="app"></main>
+<div id="pop"></div>
+<script>
+var SUITS=[{s:'♠',name:'Spades',red:false},{s:'♥',name:'Hearts',red:true},{s:'♦',name:'Diamonds',red:true},{s:'♣',name:'Clubs',red:false}];
+var RANKS=['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+var HANDS={
+ 'High Card':{chips:5,mult:1,upC:10,upM:1},'Pair':{chips:10,mult:2,upC:15,upM:1},'Two Pair':{chips:20,mult:2,upC:20,upM:1},
+ 'Three of a Kind':{chips:30,mult:3,upC:20,upM:2},'Straight':{chips:30,mult:4,upC:30,upM:3},'Flush':{chips:35,mult:4,upC:15,upM:2},
+ 'Full House':{chips:40,mult:4,upC:25,upM:2},'Four of a Kind':{chips:60,mult:7,upC:30,upM:3},'Straight Flush':{chips:100,mult:8,upC:40,upM:4}
+};
+var JOKER_POOL=[
+ {name:'Joker',face:'🃏',desc:'+4 Mult',cost:4,apply:function(c){c.mult+=4}},
+ {name:'Jolly Joker',face:'😄',desc:'+8 Mult if hand has a Pair',cost:4,apply:function(c,ctx){if(ctx.hasPair)c.mult+=8}},
+ {name:'Zany Joker',face:'🤪',desc:'+12 Mult if hand has Three of a Kind',cost:5,apply:function(c,ctx){if(ctx.hasThree)c.mult+=12}},
+ {name:'Mad Joker',face:'😤',desc:'+10 Mult if hand has Two Pair',cost:5,apply:function(c,ctx){if(ctx.hasTwoPair)c.mult+=10}},
+ {name:'Crazy Joker',face:'🎢',desc:'+12 Mult if hand is a Straight',cost:6,apply:function(c,ctx){if(ctx.isStraight)c.mult+=12}},
+ {name:'Droll Joker',face:'🎭',desc:'+10 Mult if hand is a Flush',cost:6,apply:function(c,ctx){if(ctx.isFlush)c.mult+=10}},
+ {name:'Greedy Joker',face:'💎',desc:'+3 Mult for each scoring Diamond',cost:5,apply:function(c,ctx){c.mult+=3*ctx.scoring.filter(function(x){return x.suit===2}).length}},
+ {name:'Lusty Joker',face:'♥️',desc:'+3 Mult for each scoring Heart',cost:5,apply:function(c,ctx){c.mult+=3*ctx.scoring.filter(function(x){return x.suit===1}).length}},
+ {name:'Wrathful Joker',face:'♠️',desc:'+3 Mult for each scoring Spade',cost:5,apply:function(c,ctx){c.mult+=3*ctx.scoring.filter(function(x){return x.suit===0}).length}},
+ {name:'Gluttonous Joker',face:'♣️',desc:'+3 Mult for each scoring Club',cost:5,apply:function(c,ctx){c.mult+=3*ctx.scoring.filter(function(x){return x.suit===3}).length}},
+ {name:'Half Joker',face:'½',desc:'+20 Mult if you play 3 or fewer cards',cost:6,apply:function(c,ctx){if(ctx.played<=3)c.mult+=20}},
+ {name:'Banner',face:'🚩',desc:'+30 Chips for each discard you have left',cost:5,apply:function(c,ctx){c.chips+=30*ctx.discardsLeft}},
+ {name:'Mystic Summit',face:'⛰️',desc:'+15 Mult when you have 0 discards left',cost:6,apply:function(c,ctx){if(ctx.discardsLeft===0)c.mult+=15}},
+ {name:'Fibonacci',face:'🌀',desc:'+8 Mult for each scoring Ace, 2, 3, 5 or 8',cost:7,apply:function(c,ctx){var ok=[0,1,3,6,12];c.mult+=8*ctx.scoring.filter(function(x){return ok.indexOf(x.rank)>=0}).length}},
+ {name:'Scary Face',face:'😱',desc:'+30 Chips for each scoring face card',cost:4,apply:function(c,ctx){c.chips+=30*ctx.scoring.filter(function(x){return x.rank>=10&&x.rank<=11}).length}},
+ {name:'Even Steven',face:'⚖️',desc:'+4 Mult for each scoring even-ranked card',cost:4,apply:function(c,ctx){c.mult+=4*ctx.scoring.filter(function(x){return [1,3,5,7,9].indexOf(x.rank)>=0}).length}},
+ {name:'Odd Todd',face:'🎲',desc:'+31 Chips for each scoring odd-ranked card',cost:4,apply:function(c,ctx){c.chips+=31*ctx.scoring.filter(function(x){return [0,2,4,6,8,12].indexOf(x.rank)>=0}).length}}
+];
+var BOSSES=[{name:'The Wall',desc:'This Boss needs double its usual target score.'},{name:'The Hook',desc:'After each hand you play, 2 random cards in hand are discarded.'},{name:'The Eye',desc:'You cannot play the same hand type twice this round.'}];
+var anteBase=[300,900,2200,5500,12000,24000,42000,70000];
+var S;
+function newLevels(){var o={};Object.keys(HANDS).forEach(function(k){o[k]=1});return o}
+function buildDeck(){var d=[],id=0;for(var s=0;s<4;s++)for(var r=0;r<13;r++)d.push({id:id++,rank:r,suit:s});shuffle(d);return d}
+function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+function chipVal(r){return r===12?11:(r>=9?10:r+2)}
+function newGame(){S={view:'blinds',ante:1,blindIdx:0,money:4,deck:[],hand:[],selected:[],score:0,target:0,handsLeft:4,discardsLeft:3,jokers:[],levels:newLevels(),playedTypes:[],boss:null,shop:[],log:'Pick a blind to start your run. Beat the target before you run out of hands.',lastHand:null,seedHands:0};render()}
+function blindInfo(idx){var base=anteBase[S.ante-1];var mult=idx===0?1:idx===1?1.5:2;var t=Math.round(base*mult);var name=idx===0?'Small Blind':idx===1?'Big Blind':'Boss Blind';var reward=idx===0?3:idx===1?4:5;var boss=null;if(idx===2){boss=BOSSES[(S.ante-1)%BOSSES.length];if(boss.name==='The Wall')t*=2}return{name:name,target:t,reward:reward,boss:boss}}
+function startBlind(idx){var info=blindInfo(idx);S.blindIdx=idx;S.target=info.target;S.boss=info.boss;S.score=0;S.handsLeft=4;S.discardsLeft=3;S.playedTypes=[];S.deck=buildDeck();S.hand=[];S.selected=[];drawTo();S.view='playing';S.log=info.name+' — reach '+info.target.toLocaleString()+' chips in 4 hands.'+(info.boss?' Boss: '+info.boss.name+'. '+info.boss.desc:'');render()}
+function drawTo(){while(S.hand.length<8&&S.deck.length)S.hand.push(S.deck.pop());sortHand('rank')}
+function sortHand(mode){if(mode==='rank')S.hand.sort(function(a,b){return b.rank-a.rank||a.suit-b.suit});else S.hand.sort(function(a,b){return a.suit-b.suit||b.rank-a.rank});render()}
+function toggle(id){var i=S.selected.indexOf(id);if(i>=0)S.selected.splice(i,1);else{if(S.selected.length>=5){S.log='You can play at most 5 cards.';render();return}S.selected.push(id)}render()}
+function selectedCards(){return S.hand.filter(function(c){return S.selected.indexOf(c.id)>=0})}
+function evaluate(cards){
+ if(!cards.length)return null;
+ var byRank={};cards.forEach(function(c){(byRank[c.rank]=byRank[c.rank]||[]).push(c)});
+ var groups=Object.keys(byRank).map(function(k){return byRank[k]}).sort(function(a,b){return b.length-a.length||b[0].rank-a[0].rank});
+ var isFlush=cards.length===5&&cards.every(function(c){return c.suit===cards[0].suit});
+ var ranks=cards.map(function(c){return c.rank}).sort(function(a,b){return a-b});
+ var uniq=ranks.filter(function(v,i){return i===0||v!==ranks[i-1]});
+ var isStraight=false;
+ if(cards.length===5&&uniq.length===5){if(uniq[4]-uniq[0]===4)isStraight=true;if(JSON.stringify(uniq)===JSON.stringify([0,1,2,3,12]))isStraight=true}
+ var name,scoring;
+ if(isStraight&&isFlush){name=(uniq.indexOf(12)>=0&&uniq.indexOf(11)>=0)?'Straight Flush':'Straight Flush';scoring=cards.slice()}
+ else if(groups[0].length===4){name='Four of a Kind';scoring=groups[0].slice()}
+ else if(groups[0].length===3&&groups[1]&&groups[1].length===2){name='Full House';scoring=cards.slice()}
+ else if(isFlush){name='Flush';scoring=cards.slice()}
+ else if(isStraight){name='Straight';scoring=cards.slice()}
+ else if(groups[0].length===3){name='Three of a Kind';scoring=groups[0].slice()}
+ else if(groups[0].length===2&&groups[1]&&groups[1].length===2){name='Two Pair';scoring=groups[0].concat(groups[1])}
+ else if(groups[0].length===2){name='Pair';scoring=groups[0].slice()}
+ else{name='High Card';var best=cards.slice().sort(function(a,b){return b.rank-a.rank})[0];scoring=[best]}
+ var lvl=S.levels[name];var base=HANDS[name];
+ var ctx={scoring:scoring,played:cards.length,discardsLeft:S.discardsLeft,hasPair:groups[0].length>=2,hasThree:groups[0].length>=3,hasTwoPair:groups[0].length===2&&!!(groups[1]&&groups[1].length===2),isStraight:isStraight,isFlush:isFlush};
+ var calc={chips:base.chips+(lvl-1)*base.upC,mult:base.mult+(lvl-1)*base.upM};
+ scoring.forEach(function(c){calc.chips+=chipVal(c.rank)});
+ S.jokers.forEach(function(j){j.apply(calc,ctx)});
+ calc.total=calc.chips*calc.mult;
+ return{name:name,scoring:scoring,calc:calc,level:lvl};
+}
+function playHand(){
+ var cards=selectedCards();if(!cards.length||S.handsLeft<=0)return;
+ var ev=evaluate(cards);
+ if(S.boss&&S.boss.name==='The Eye'&&S.playedTypes.indexOf(ev.name)>=0){S.log='The Eye blocks you: '+ev.name+' was already played this round. Try a different hand.';render();return}
+ S.playedTypes.push(ev.name);S.lastHand=ev;
+ S.score+=ev.calc.total;S.handsLeft--;
+ pop(ev.calc.total.toLocaleString());
+ S.hand=S.hand.filter(function(c){return S.selected.indexOf(c.id)<0});S.selected=[];
+ if(S.boss&&S.boss.name==='The Hook'&&S.hand.length){shuffle(S.hand);var cut=S.hand.splice(0,Math.min(2,S.hand.length));S.log='The Hook tore away '+cut.length+' card(s) from your hand. '}
+ else S.log='';
+ S.log+=ev.name+' scored '+ev.calc.chips+' × '+ev.calc.mult+' = '+ev.calc.total.toLocaleString()+'.';
+ if(S.score>=S.target){winBlind();return}
+ if(S.handsLeft<=0){S.view='over';render();return}
+ drawTo();render();
+}
+function discard(){
+ var cards=selectedCards();if(!cards.length||S.discardsLeft<=0)return;
+ S.discardsLeft--;S.hand=S.hand.filter(function(c){return S.selected.indexOf(c.id)<0});S.selected=[];drawTo();S.log='Discarded '+cards.length+' card(s). '+S.discardsLeft+' discards left.';render();
+}
+function winBlind(){
+ var info=blindInfo(S.blindIdx);var interest=Math.min(5,Math.floor(S.money/5));var handBonus=S.handsLeft;var total=info.reward+interest+handBonus;
+ S.money+=total;S.lastReward={base:info.reward,interest:interest,hands:handBonus,total:total};
+ genShop();S.view='shop';S.log='Blind beaten! You earned $'+total+' ($'+info.reward+' blind + $'+handBonus+' unused hands + $'+interest+' interest).';
+ render();
+}
+function genShop(){
+ var pool=shuffle(JOKER_POOL.slice()).filter(function(j){return !S.jokers.some(function(o){return o.name===j.name})});
+ var items=[];
+ for(var i=0;i<2&&i<pool.length;i++)items.push({type:'joker',data:pool[i],cost:pool[i].cost,sold:false});
+ var handNames=shuffle(Object.keys(HANDS).slice());
+ for(var k=0;k<2;k++)items.push({type:'planet',hand:handNames[k],cost:3,sold:false});
+ S.shop=items;
+}
+function buy(idx){
+ var it=S.shop[idx];if(!it||it.sold)return;
+ if(S.money<it.cost){S.log='Not enough money for that — you have $'+S.money+'.';render();return}
+ if(it.type==='joker'&&S.jokers.length>=5){S.log='Your Joker slots are full (5). Sell the idea, not a card — pick something else.';render();return}
+ S.money-=it.cost;it.sold=true;
+ if(it.type==='joker'){S.jokers.push(it.data);S.log='Bought '+it.data.name+'.'}
+ else{S.levels[it.hand]++;S.log=it.hand+' leveled up to Lv. '+S.levels[it.hand]+'!'}
+ render();
+}
+function reroll(){if(S.money<5){S.log='Reroll costs $5.';render();return}S.money-=5;genShop();render()}
+function nextBlind(){
+ if(S.blindIdx>=2){S.ante++;S.blindIdx=0;if(S.ante>8){S.view='win';render();return}}
+ else S.blindIdx++;
+ S.view='blinds';S.log=S.ante>1&&S.blindIdx===0?'Ante '+S.ante+' — the blinds climb. Pick your next fight.':'Pick the next blind.';render();
+}
+function pop(txt){var el=document.getElementById('pop');el.innerHTML='<div>'+txt+'</div>';setTimeout(function(){el.innerHTML=''},1000)}
+function cardHTML(c,scoringIds){
+ var su=SUITS[c.suit];var sel=S.selected.indexOf(c.id)>=0;var sc=scoringIds&&scoringIds.indexOf(c.id)>=0;
+ return '<button class="pcard '+(su.red?'red':'')+(sel?' sel':'')+(sc?' scoring':'')+'" onclick="toggle('+c.id+')" aria-label="'+RANKS[c.rank]+' of '+su.name+'"><div class="r">'+RANKS[c.rank]+'</div><div class="s">'+su.s+'</div><div class="big">'+su.s+'</div><div class="lvl">'+chipVal(c.rank)+' chips</div></button>';
+}
+function render(){
+ document.getElementById('pills').innerHTML='<span class="pill">ANTE <b>'+Math.min(S.ante,8)+' / 8</b></span><span class="pill">MONEY <b>$'+S.money+'</b></span><span class="pill">JOKERS <b>'+S.jokers.length+' / 5</b></span>'+(S.view==='playing'?'<span class="pill">DECK <b>'+S.deck.length+'</b></span>':'');
+ var app=document.getElementById('app');
+ if(S.view==='blinds'){renderBlinds(app);return}
+ if(S.view==='shop'){renderShop(app);return}
+ if(S.view==='over'){app.innerHTML='<section class="screen" style="text-align:center"><div style="font-size:44px">🂡</div><h1 style="font-family:Fraunces,serif;font-size:36px;margin:8px 0">Run over</h1><p style="color:var(--muted);line-height:1.6">You reached Ante '+S.ante+' and fell short of the target by '+(S.target-S.score).toLocaleString()+' chips.<br>Final blind score: '+S.score.toLocaleString()+' / '+S.target.toLocaleString()+'</p><button class="btn gold" onclick="newGame()">Start a new run</button></section>';return}
+ if(S.view==='win'){app.innerHTML='<section class="screen" style="text-align:center"><div style="font-size:44px">👑</div><h1 style="font-family:Fraunces,serif;font-size:36px;margin:8px 0">You beat Ante 8!</h1><p style="color:var(--muted);line-height:1.6">Every blind cleared, with $'+S.money+' in your pocket and '+S.jokers.length+' Jokers at your side. That\'s a winning run — go again and chase a bigger score.</p><button class="btn gold" onclick="newGame()">Play again</button></section>';return}
+ // playing
+ var sel=selectedCards();var ev=sel.length?evaluate(sel):null;
+ var scoringIds=ev?ev.scoring.map(function(c){return c.id}):[];
+ var pct=Math.min(100,Math.round(S.score/S.target*100));
+ var jokers=S.jokers.length?S.jokers.map(function(j){return '<div class="joker"><div class="face">'+j.face+'</div><h4>'+j.name+'</h4><p>'+j.desc+'</p></div>'}).join(''):'';
+ for(var e=S.jokers.length;e<5;e++)jokers+='<div class="emptyj">Empty<br>Joker slot</div>';
+ app.innerHTML=
+ '<div class="scorebar"><div><div style="font-weight:900;font-size:14px;letter-spacing:.06em">'+blindInfo(S.blindIdx).name.toUpperCase()+' — ANTE '+S.ante+(S.boss?' · '+S.boss.name:'')+'</div><div class="bar"><i style="width:'+pct+'%"></i></div><div style="font-size:12px;color:var(--muted);margin-top:5px">'+(S.boss?S.boss.desc:'No boss effect on this blind.')+'</div></div><div class="bigscore"><small>ROUND SCORE / TARGET</small>'+S.score.toLocaleString()+' / '+S.target.toLocaleString()+'</div></div>'
+ +'<div class="jokers">'+jokers+'</div>'
+ +'<div class="handlabel">'+(ev?'<div class="hname">'+ev.name+' <span style="font-size:15px;color:var(--gold)">Lv. '+ev.level+'</span></div><div class="calc"><b class="chips">'+ev.calc.chips+' Chips</b><span class="x">×</span><b class="mult">'+ev.calc.mult+' Mult</b><span class="x">=</span><b style="background:#111">'+ev.calc.total.toLocaleString()+'</b></div>':'<div class="hname" style="color:#ffffff88">Select up to 5 cards</div><p style="color:var(--muted);font-size:13px;margin:4px 0">Only the cards that make the hand score their chips — a pair scores the pair, a flush scores all five.</p>')+'</div>'
+ +'<div class="cards">'+S.hand.map(function(c){return cardHTML(c,scoringIds)}).join('')+'</div>'
+ +'<div class="controls"><button class="btn play" '+(sel.length&&S.handsLeft?'':'disabled')+' onclick="playHand()">▶ Play Hand ('+sel.length+')</button><button class="btn discard" '+(sel.length&&S.discardsLeft?'':'disabled')+' onclick="discard()">Discard ('+sel.length+')</button><button class="btn ghost" onclick="sortHand(\'rank\')">Sort: Rank</button><button class="btn ghost" onclick="sortHand(\'suit\')">Sort: Suit</button></div>'
+ +'<div class="meta"><span>🖐 Hands left: '+S.handsLeft+'</span><span>🗑 Discards left: '+S.discardsLeft+'</span><span>🃏 Deck: '+S.deck.length+'</span><span>💵 $'+S.money+'</span></div>'
+ +'<p class="log" style="margin-top:10px">'+S.log+'</p>'
+ +renderLevels();
+}
+function renderLevels(){return '<div class="levels">'+Object.keys(HANDS).map(function(k){return '<div class="lvlbox"><b>'+k+'</b>Lv. '+S.levels[k]+' · '+(HANDS[k].chips+(S.levels[k]-1)*HANDS[k].upC)+' chips × '+(HANDS[k].mult+(S.levels[k]-1)*HANDS[k].upM)+' mult</div>'}).join('')+'</div>'}
+function renderBlinds(app){
+ var cardsHtml=[0,1,2].map(function(i){var info=blindInfo(i);var done=i<S.blindIdx;var cur=i===S.blindIdx;return '<button class="blindcard '+(i===0?'small':i===1?'big':'boss')+'" '+(done||i>S.blindIdx?'disabled style="opacity:.45"':'onclick="startBlind('+i+')"')+'><h3>'+(done?'✓ ':'')+info.name+'</h3><div class="target">'+info.target.toLocaleString()+'</div><p>Score at least this in 4 hands.</p><p>Reward: <b>$'+info.reward+'</b> + $1 per unused hand + interest</p>'+(info.boss?'<p><b>'+info.boss.name+':</b> '+info.boss.desc+'</p>':'<p>No boss effect.</p>')+(cur?'<p><b>← Up next</b></p>':'')+'</button>'}).join('');
+ app.innerHTML='<section class="screen"><h1 style="font-family:Fraunces,serif;font-size:32px;margin:0">Ante '+S.ante+' — choose your blind</h1><p style="color:var(--muted);line-height:1.6;margin:8px 0 0">You get <b style="color:#fff">4 hands</b> and <b style="color:#fff">3 discards</b> per blind, a hand of 8 cards, and you play 5 at a time. Bigger blinds pay more — and the Boss always brings a trick. Beat all three blinds to climb to Ante '+(S.ante+1)+'; beat Ante 8 to win the run.</p><div class="blinds">'+cardsHtml+'</div><p class="log" style="margin-top:12px">'+S.log+'</p>'+(S.jokers.length?'<div class="jokers">'+S.jokers.map(function(j){return '<div class="joker"><div class="face">'+j.face+'</div><h4>'+j.name+'</h4><p>'+j.desc+'</p></div>'}).join('')+'</div>':'')+renderLevels()+'</section>';
+}
+function renderShop(app){
+ var items=S.shop.map(function(it,i){
+   if(it.type==='joker')return '<div class="shopitem"><div style="font-size:30px">'+it.data.face+'</div><h4>'+it.data.name+' — <span class="price">$'+it.cost+'</span></h4><p>'+it.data.desc+'</p><button class="btn gold" '+(it.sold?'disabled':'onclick="buy('+i+')"')+'>'+(it.sold?'✓ Bought':'Buy')+'</button></div>';
+   var lvl=S.levels[it.hand];return '<div class="shopitem"><div style="font-size:30px">🪐</div><h4>Planet Card — <span class="price">$'+it.cost+'</span></h4><p>Level up <b>'+it.hand+'</b> (now Lv. '+lvl+'): +'+HANDS[it.hand].upC+' chips, +'+HANDS[it.hand].upM+' mult, forever.</p><button class="btn gold" '+(it.sold?'disabled':'onclick="buy('+i+')"')+'>'+(it.sold?'✓ Used':'Buy & use')+'</button></div>';
+ }).join('');
+ var next=blindInfo(S.blindIdx>=2?0:S.blindIdx+1);
+ app.innerHTML='<section class="screen"><h1 style="font-family:Fraunces,serif;font-size:32px;margin:0">🛒 The Shop</h1><p style="color:var(--muted);line-height:1.6">You have <b style="color:var(--gold)">$'+S.money+'</b> · Jokers: '+S.jokers.length+'/5. Jokers trigger on every hand you play — stack ones that match the hands you love.</p><p class="log">'+S.log+'</p><div class="shopgrid">'+items+'</div><div class="controls" style="margin-top:14px"><button class="btn ghost" onclick="reroll()">↻ Reroll — $5</button><button class="btn play" onclick="nextBlind()">Next: '+(S.blindIdx>=2?'Ante '+(S.ante+1)+' Small Blind':next.name)+' →</button></div>'+renderLevels()+'</section>';
+}
+newGame();
+</script>
+</body>
+</html>
